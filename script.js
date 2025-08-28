@@ -1,28 +1,67 @@
-// Get input field and all the buttons
 const inputField = document.getElementById("input-field");
 const buttons = document.querySelectorAll("button");
 
-//Loop through buttons and add click events
+let evaluated = false; // Track if last action was "="
+
+// Math operator check
+const isOperator = (char) => ["+", "-", "*", "/", "%"].includes(char);
+
+// Button click event loop
 buttons.forEach(button => {
     button.addEventListener("click", () => {
-        const value = button.textContent;
+        const value = button.textContent.trim();
 
-        if(value === "C"){
-                   //clear input field
-                    inputField.value = "";
-                            } else if (value === "="){
+        // Handle Clear
+        if (value === "C") {
+            inputField.value = "";
+            evaluated = false;
+
+        // Handle Delete
+        } else if (value === "D") {
+            inputField.value = inputField.value.slice(0, -1);
+
+        // Handle Evaluate
+        } else if (value === "=") {
+            let expression = inputField.value;
+
+            // Remove trailing operator
+            if (expression && isOperator(expression.slice(-1))) {
+                expression = expression.slice(0, -1);
+            }
+
             try {
-                //Evaluate the expression
-                inputField.value = eval(inputField.value)
-        } catch {
-            inputField.value = "Error"
+                inputField.value = eval(expression);
+                evaluated = true;
+            } catch {
+                inputField.value = "Error";
+                evaluated = false;
+            }
+
+        // Handle other buttons
+        } else {
+            // If last action was evaluation, clear before adding new number
+            if (evaluated && !isOperator(value)) {
+                inputField.value = "";
+                evaluated = false;
+            }
+
+            const lastChar = inputField.value.slice(-1);
+
+            // Prevent starting with operator
+            if (!inputField.value && isOperator(value)) return;
+
+            // Prevent consecutive operators
+            if (isOperator(value) && isOperator(lastChar)) {
+                inputField.value = inputField.value.slice(0, -1) + value;
+            } else {
+                inputField.value += value;
+            }
+
+            evaluated = false;
         }
-        }else {
-            //Add number/operator to display
-            inputField.value += value;
-        }
-    })
-})
+    });
+});
+
 
 //Task1. Sanitize ur code
 //a. ensure that after and evaluation, the input field should be cleared when another button with a number is clicked before the number clicked id displayed
